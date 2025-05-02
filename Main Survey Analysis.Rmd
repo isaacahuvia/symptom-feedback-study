@@ -1,0 +1,1107 @@
+---
+title: "Main Survey Analysis"
+output: html_document
+date: "2025-03-05"
+---
+
+```{r, include = F}
+## Load packages
+library(tidyverse)
+library(MOTE)
+library(broom)
+library(knitr)
+library(kableExtra)
+library(scales)
+library(psych)
+library(here)
+`%+%` <- paste0
+
+
+## Load data
+data_directory <- "H:\\My Drive\\Research\\Projects\\Depression Symptom Feedback\\Data\\"
+
+# Data for both groups (i.e., full sample)
+both_groups <- readRDS(data_directory %+% "Clean Main Survey Data.rds") 
+
+feedback_only <- both_groups %>%
+  filter(!group)
+
+intervention_only <- both_groups %>%
+  filter(group)
+
+
+## Create z-scores, by group
+both_groups <- both_groups %>%
+  mutate(
+    across(
+      .cols = c(
+        matches("^dep_.._t1$"),
+        matches("^prob_.._t.$")
+      ),
+      .fn = ~ as.numeric(scale(.x)),
+      .names = "{.col}_z"
+    )
+  )
+
+feedback_only <- feedback_only %>%
+  mutate(
+    across(
+      .cols = c(
+        matches("^dep_.._t1$"),
+        matches("^prob_.._t.$")
+      ),
+      .fn = ~ as.numeric(scale(.x)),
+      .names = "{.col}_z"
+    )
+  )
+
+
+## Load functions
+source(here("Main Survey Analysis Functions.R"))
+```
+
+## Descriptive Statistics
+
+### Age
+
+```{r}
+both_groups %>%
+  summarize(across(age_t1, list(mean = mean, sd = sd, min = min, max = max))) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  summarize(across(age_t1, list(mean = mean, sd = sd, min = min, max = max))) %>%
+  print_nicely(2)
+```
+
+### Gender
+
+```{r}
+both_groups %>%
+  count(gender_t1) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  count(gender_t1) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+```
+
+### Sexuality
+
+```{r}
+both_groups %>%
+  count(sexuality_t1) %>%
+  drop_na() %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  count(sexuality_t1) %>%
+  drop_na() %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+```
+
+### Race/Ethnicity
+
+```{r}
+both_groups %>%
+  count(race_eth_t1) %>%
+  drop_na() %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  count(race_eth_t1) %>%
+  drop_na() %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+```
+
+### PHQ-8 Sum Score
+
+```{r}
+both_groups %>%
+  summarize(across(phq_8_sum, list(mean = mean, sd = sd, min = min, max = max))) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  summarize(across(phq_8_sum, list(mean = mean, sd = sd, min = min, max = max))) %>%
+  print_nicely(2)
+```
+
+### PHQ-8 Categories (Test Result)
+
+```{r}
+both_groups %>%
+  count(test_result) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  count(test_result) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+```
+
+### Self-Labeling (Current)
+
+```{r}
+both_groups %>%
+  count(self_label_t1) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  count(self_label_t1) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+```
+
+### Self-Labeling (Past)
+
+```{r}
+both_groups %>%
+  count(self_label_ever_t1) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+
+both_groups %>%
+  group_by(group_char) %>%
+  count(self_label_ever_t1) %>%
+  mutate(pct = percent(n / sum(n), .1)) %>%
+  print_nicely(2)
+```
+
+## Correlations and Alphas
+
+### Depression Beliefs
+
+#### Personal Control
+
+```{r}
+both_groups %>%
+  select(matches("dep_pc_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("dep_pc_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Therapy Control
+
+```{r}
+both_groups %>%
+  select(matches("dep_tc_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("dep_tc_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Medication control
+
+```{r}
+both_groups %>%
+  select(matches("dep_mc_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("dep_mc_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Prognostic pessimism
+
+```{r}
+both_groups %>%
+  select(matches("dep_pp_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("dep_pp_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Blame
+
+```{r}
+both_groups %>%
+  select(matches("dep_bl_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("dep_bl_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Intercorrelations
+
+```{r}
+both_groups %>%
+  select(matches("^dep_.._t1$")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("^dep_.._t1$")) %>%
+  corr.test(adjust = "none") %>%
+  pluck("p") %>%
+  print_nicely(3)
+```
+
+### Problem Beliefs
+
+#### Personal Control
+
+```{r}
+both_groups %>%
+  select(matches("prob_pc_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("prob_pc_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Therapy Control
+
+```{r}
+both_groups %>%
+  select(matches("prob_tc_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("prob_tc_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Medication Control
+
+```{r}
+both_groups %>%
+  select(matches("prob_mc_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("prob_mc_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Prognostic Pessimism
+
+```{r}
+both_groups %>%
+  select(matches("prob_pp_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("prob_pp_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Blame
+
+```{r}
+both_groups %>%
+  select(matches("prob_bl_t1_[0-9]")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("prob_bl_t1_[0-9]")) %>%
+  alpha() %>%
+  pluck("total") %>%
+  print_nicely(2)
+```
+
+#### Intercorrelations
+
+```{r}
+both_groups %>%
+  select(matches("^prob_.._t1$")) %>%
+  cor() %>%
+  print_nicely(2)
+
+both_groups %>%
+  select(matches("^prob_.._t1$")) %>%
+  corr.test(adjust = "none") %>%
+  pluck("p") %>%
+  print_nicely(3)
+```
+
+#### Comparisons
+
+```{r}
+t_test <- function(stem) {
+  
+  prob <- both_groups[["prob_" %+% stem %+% "_t1"]]
+  dep <- both_groups[["dep_" %+% stem %+% "_t1"]]
+  
+  t <- t.test(prob, dep, paired = T)
+  
+  d <- d.ind.t(
+    m1 = mean(prob),
+    sd1 = sd(prob),
+    n1 = length(prob),
+    m2 = mean(dep),
+    sd2 = sd(dep),
+    n2 = length(dep)
+  )
+  
+  out <- tibble(
+    var = stem,
+    prob_mean = mean(prob),
+    prob_sd = sd(prob),
+    dep_mean = mean(dep),
+    dep_sd = sd(dep),
+    d_est = d$d,
+    d_low = d$dlow,
+    d_high = d$dhigh
+  )
+  
+}
+
+map(
+  .x = lst("pc", "tc", "mc", "pp", "bl"),
+  .f = t_test
+) %>%
+  bind_rows()
+```
+
+#### Visualized
+
+```{r}
+both_groups %>%
+  select(
+    matches("^prob_.._t1$"),
+    matches("^dep_.._t1$")
+  ) %>%
+  pivot_longer(cols = c(matches("^prob_.._t1$"), matches("^dep_.._t1$"))) %>%
+  mutate(
+    construct = case_when(
+      grepl("^prob", name) ~ "Problem Beliefs",
+      grepl("^dep", name) ~ "Depression Beliefs"
+    ) %>%
+      factor(levels = c("Problem Beliefs", "Depression Beliefs")),
+    belief = case_when(
+      grepl("_pc_", name) ~ "Personal Control",
+      grepl("_tc_", name) ~ "Therapy Control",
+      grepl("_mc_", name) ~ "Medication Control",
+      grepl("_pp_", name) ~ "Prognostic Pessimism",
+      grepl("_bl_", name) ~ "Blame"
+    )
+  ) %>%
+  ggplot() +
+  geom_histogram(
+    aes(value),
+    binwidth = 1/3
+  ) +
+  facet_grid(
+    construct ~ belief
+  ) +
+  theme_classic()
+```
+
+## Research Questions
+
+### RQ 1. Average Change in Outcomes
+
+```{r}
+bind_rows(
+  d_av(feedback_only, "prob_pc"),
+  d_av(feedback_only, "prob_tc"),
+  d_av(feedback_only, "prob_mc"),
+  d_av(feedback_only, "prob_pp"),
+  d_av(feedback_only, "prob_bl")
+) %>%
+  mutate(t_p_adj = p.adjust(t_p, "BH")) %>%
+  print_nicely(3)
+```
+
+#### RQ 1a. Moderation by Self-Labeling
+
+```{r}
+bind_rows(
+  regression(feedback_only, prob_pc_t2_z ~ prob_pc_t1_z + self_label_t2_bin),
+  regression(feedback_only, prob_tc_t2_z ~ prob_tc_t1_z + self_label_t2_bin),
+  regression(feedback_only, prob_mc_t2_z ~ prob_mc_t1_z + self_label_t2_bin),
+  regression(feedback_only, prob_pp_t2_z ~ prob_pp_t1_z + self_label_t2_bin),
+  regression(feedback_only, prob_bl_t2_z ~ prob_bl_t1_z + self_label_t2_bin)
+) %>%
+  filter(iv == "self_label_t2_binTRUE") %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+```
+
+#### RQ 1b. Moderation by Depression Beliefs
+
+```{r}
+bind_rows(
+  regression(feedback_only, prob_pc_t2_z ~ prob_pc_t1_z + dep_pc_t1_z),
+  regression(feedback_only, prob_tc_t2_z ~ prob_tc_t1_z + dep_tc_t1_z),
+  regression(feedback_only, prob_mc_t2_z ~ prob_mc_t1_z + dep_mc_t1_z),
+  regression(feedback_only, prob_pp_t2_z ~ prob_pp_t1_z + dep_pp_t1_z),
+  regression(feedback_only, prob_bl_t2_z ~ prob_bl_t1_z + dep_bl_t1_z)
+) %>%
+  filter(grepl("^dep", iv)) %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+```
+
+#### Additional Moderation Tests
+
+Self-Labeling * Baseline Belief Interaction
+
+```{r}
+bind_rows(
+  regression(feedback_only, prob_pc_t2_z ~ prob_pc_t1_z + self_label_t2_bin*dep_pc_t1_z),
+  regression(feedback_only, prob_tc_t2_z ~ prob_tc_t1_z + self_label_t2_bin*dep_tc_t1_z),
+  regression(feedback_only, prob_mc_t2_z ~ prob_mc_t1_z + self_label_t2_bin*dep_mc_t1_z),
+  regression(feedback_only, prob_pp_t2_z ~ prob_pp_t1_z + self_label_t2_bin*dep_pp_t1_z),
+  regression(feedback_only, prob_bl_t2_z ~ prob_bl_t1_z + self_label_t2_bin*dep_bl_t1_z)
+) %>%
+  filter(grepl(":", iv)) %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+```
+
+Test Result (_Not_ PHQ-8 Sum)
+
+It's hard to come up with a statistical test that proves the effect is from the test result, rather than from PHQ sum score; they are highly correlated of course (_r_ > .9), so having them in the same model inflates variance. If you try a residual approach, the non-residualized IV (because it owns all the shared variance) is always significant, and the residualized variable is not. The visual argument seems strongest. It's possible that a formal test of regression discontinuity could be used here as well, but that feels too complicated for the time being.
+
+```{r}
+bind_rows(
+  regression(feedback_only, prob_pc_t2_z ~ prob_pc_t1_z + as.numeric(test_result_fct)),
+  regression(feedback_only, prob_tc_t2_z ~ prob_tc_t1_z + as.numeric(test_result_fct)),
+  regression(feedback_only, prob_mc_t2_z ~ prob_mc_t1_z + as.numeric(test_result_fct)),
+  regression(feedback_only, prob_pp_t2_z ~ prob_pp_t1_z + as.numeric(test_result_fct)),
+  regression(feedback_only, prob_bl_t2_z ~ prob_bl_t1_z + as.numeric(test_result_fct))
+) %>%
+  filter(grepl("test", iv)) %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+
+bind_rows(
+  regression(feedback_only, prob_pc_t2_z ~ prob_pc_t1_z + test_result_fct),
+  regression(feedback_only, prob_tc_t2_z ~ prob_tc_t1_z + test_result_fct),
+  regression(feedback_only, prob_mc_t2_z ~ prob_mc_t1_z + test_result_fct),
+  regression(feedback_only, prob_pp_t2_z ~ prob_pp_t1_z + test_result_fct),
+  regression(feedback_only, prob_bl_t2_z ~ prob_bl_t1_z + test_result_fct)
+) %>%
+  filter(grepl("test", iv)) %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+
+# Change at each level
+mappable_grid <- expand_grid(
+  .x = c("prob_pc", "prob_tc", "prob_mc", "prob_pp", "prob_bl"),
+  .y = c("Mild Depression", "Moderate Depression", "Moderately Severe or Severe Depression")
+)
+
+map2(
+  .x = mappable_grid$.x,
+  .y = mappable_grid$.y,
+  .f = ~ {
+    d_av(
+      .data = filter(feedback_only, test_result_fct == .y), 
+      var = .x
+    ) %>%
+      select(d_av_est) %>%
+      mutate(var = .x, cat = .y)
+  }
+) %>% 
+  bind_rows() %>%
+  pivot_wider(
+    id_cols = "var",
+    names_from = "cat",
+    values_from = "d_av_est"
+  )
+
+# Plot for personal control
+temp <- lm(data = feedback_only, (prob_pc_t2_z - prob_pc_t1_z) ~ test_result_fct + phq_8_sum)
+feedback_only %>%
+  mutate(
+    actual_change = prob_pc_t2_z - prob_pc_t1_z,
+    predicted_change = predict(temp)
+  ) %>%
+  ggplot(aes(phq_8_sum, actual_change, color = test_result_fct)) +
+  geom_line(aes(y = predicted_change), size = 1.5) +
+  stat_summary(fun = mean, fun.data = mean_se, geom = "pointrange", alpha = .5) +
+  scale_x_continuous(name = "PHQ-8 Sum") +
+  scale_y_continuous(name = "Change in Perceived Personal Control (S.D.)") +
+  scale_color_discrete(name = "PHQ-8 Test Result") +
+  theme_classic()
+```
+
+### RQ 2. Intervention Effects
+
+```{r}
+bind_rows(
+  regression(both_groups, prob_pc_t2_z ~ prob_pc_t1_z + group),
+  regression(both_groups, prob_tc_t2_z ~ prob_tc_t1_z + group),
+  regression(both_groups, prob_mc_t2_z ~ prob_mc_t1_z + group),
+  regression(both_groups, prob_pp_t2_z ~ prob_pp_t1_z + group),
+  regression(both_groups, prob_bl_t2_z ~ prob_bl_t1_z + group)
+) %>%
+  filter(iv == "groupTRUE") %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+
+# d(av)
+bind_rows(
+  d_av(intervention_only, "prob_pc"),
+  d_av(intervention_only, "prob_tc"),
+  d_av(intervention_only, "prob_mc"),
+  d_av(intervention_only, "prob_pp"),
+  d_av(intervention_only, "prob_bl")
+) %>%
+  print_nicely(3)
+
+# d(ppc2)
+bind_rows(
+  d_ppc2("prob_pc"),
+  d_ppc2("prob_tc"),
+  d_ppc2("prob_mc"),
+  d_ppc2("prob_pp"),
+  d_ppc2("prob_bl")
+) %>%
+  print_nicely(3)
+```
+
+#### RQ 2a. Moderation by Self-Labeling
+
+```{r}
+bind_rows(
+  regression(both_groups, prob_pc_t2_z ~ prob_pc_t1_z + group*self_label_t2_bin),
+  regression(both_groups, prob_tc_t2_z ~ prob_tc_t1_z + group*self_label_t2_bin),
+  regression(both_groups, prob_mc_t2_z ~ prob_mc_t1_z + group*self_label_t2_bin),
+  regression(both_groups, prob_pp_t2_z ~ prob_pp_t1_z + group*self_label_t2_bin),
+  regression(both_groups, prob_bl_t2_z ~ prob_bl_t1_z + group*self_label_t2_bin)
+) %>%
+  filter(iv == "groupTRUE:self_label_t2_binTRUE") %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+```
+
+Visualized:
+
+```{r}
+both_groups %>%
+  pivot_longer(matches("^prob_.._t.$")) %>%
+  mutate(
+    construct = name %>%
+      str_extract("(?<=_)(.+?)(?=_)") %>%
+      factor(
+        levels = c("pc", "tc", "mc", "pp", "bl"),
+        labels = c(
+          "Personal Control",
+          "Therapy Control",
+          "Medication Control",
+          "Prognostic Pessimism",
+          "Self-Blame"
+        )
+      ),
+    timepoint = str_extract(name, "..$")
+  ) %>%
+  group_by(construct, timepoint, group_char, self_label_t2_bin) %>%
+  summarize(
+    mean = mean(value),
+    sd = sd(value),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    se = sd / sqrt(n),
+    upper = mean + (1.96 * se),
+    lower = mean - (1.96 * se)
+  ) %>%
+  ggplot(
+    aes(
+      x = timepoint,
+      y = mean,
+      color = group_char,
+      linetype = self_label_t2_bin,
+      group = interaction(group_char, self_label_t2_bin)
+    )
+  ) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = lower,
+      ymax = upper
+    ),
+    size = 1,
+    width = .2
+  ) +
+  scale_x_discrete(name = "Timepoint") +
+  scale_y_continuous(name = "Mean (Likert Scale Points)") +
+  labs(color = "Received Intervention", linetype = "Self-Label (t2)") +
+  facet_wrap(group_char ~ construct, nrow = 2) +
+  theme_classic()
+```
+
+#### RQ 2b. Moderation by Depression Beliefs
+
+```{r}
+bind_rows(
+  regression(both_groups, prob_pc_t2_z ~ prob_pc_t1_z + group*dep_pc_t1_z),
+  regression(both_groups, prob_tc_t2_z ~ prob_tc_t1_z + group*dep_tc_t1_z),
+  regression(both_groups, prob_mc_t2_z ~ prob_mc_t1_z + group*dep_mc_t1_z),
+  regression(both_groups, prob_pp_t2_z ~ prob_pp_t1_z + group*dep_pp_t1_z),
+  regression(both_groups, prob_bl_t2_z ~ prob_bl_t1_z + group*dep_bl_t1_z)
+) %>%
+  filter(grepl(":", iv)) %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+```
+
+#### Additional Moderation Tests
+
+```{r}
+# Test result (controlling for PHQ-8 sum)
+bind_rows(
+  regression(both_groups, prob_pc_t2_z ~ prob_pc_t1_z + group*test_result_fct + phq_8_sum),
+  regression(both_groups, prob_tc_t2_z ~ prob_tc_t1_z + group*test_result_fct + phq_8_sum),
+  regression(both_groups, prob_mc_t2_z ~ prob_mc_t1_z + group*test_result_fct + phq_8_sum),
+  regression(both_groups, prob_pp_t2_z ~ prob_pp_t1_z + group*test_result_fct + phq_8_sum),
+  regression(both_groups, prob_bl_t2_z ~ prob_bl_t1_z + group*test_result_fct + phq_8_sum)
+) %>%
+  filter(grepl(":", iv)) %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+
+# PHQ-8 sum (controlling for test result)
+bind_rows(
+  regression(both_groups, prob_pc_t2_z ~ prob_pc_t1_z + group*phq_8_sum + test_result_fct),
+  regression(both_groups, prob_tc_t2_z ~ prob_tc_t1_z + group*phq_8_sum + test_result_fct),
+  regression(both_groups, prob_mc_t2_z ~ prob_mc_t1_z + group*phq_8_sum + test_result_fct),
+  regression(both_groups, prob_pp_t2_z ~ prob_pp_t1_z + group*phq_8_sum + test_result_fct),
+  regression(both_groups, prob_bl_t2_z ~ prob_bl_t1_z + group*phq_8_sum + test_result_fct)
+) %>%
+  filter(grepl(":", iv)) %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  print_nicely(3)
+```
+
+### Planned Secondary Analyses
+
+#### Feedback Impact (Content Analysis)
+
+```{r}
+feedback_impact_codes <- both_groups %>%
+  select(
+    starts_with("feedback_impact"), 
+    -c(feedback_impact_t1.5, feedback_impact_notes)
+  ) %>%
+  colnames()
+
+# Frequencies
+both_groups %>%
+  pivot_longer(cols = feedback_impact_codes) %>%
+  group_by(name) %>%
+  summarize(
+    sum = sum(value),
+    pct = percent(mean(value), .1)
+  ) %>%
+  print_nicely(2)
+
+# Visualized
+both_groups %>%
+  pivot_longer(cols = feedback_impact_codes) %>%
+  mutate(
+    name = case_match(
+      name,
+      "feedback_impact_expected" ~ "Expected",
+      "feedback_impact_skeptical" ~ "Skeptical",
+      "feedback_impact_surprised" ~ "Surprised",
+      "feedback_impact_indifferent" ~ "Indifferent",
+      "feedback_impact_misc_good" ~ "Misc. Good",
+      "feedback_impact_validated" ~ "Validated",
+      "feedback_impact_motivated" ~ "Motivated",
+      "feedback_impact_concerned" ~ "Concerned",
+      "feedback_impact_curious" ~ "Curious",
+      "feedback_impact_sad" ~ "Sad",
+      "feedback_impact_unsure" ~ "Unsure",
+      "feedback_impact_relieved" ~ "Relieved",
+      "feedback_impact_misc_bad" ~ "Misc. Bad"
+    )
+  ) %>%
+  group_by(name) %>%
+  summarize(prop = mean(value)) %>%
+  arrange(desc(prop)) %>%
+  ggplot(aes(reorder(name, prop), prop)) +
+  geom_col() +
+  scale_x_discrete(name = "Response to Feedback") +
+  scale_y_continuous(name = "Frequency", labels = percent) +
+  coord_flip() +
+  theme_classic()
+
+# Relationship with test result
+feedback_impact_codes %>%
+  map(
+    .f = function(.x) {
+      chisq <- chisq.test(table(both_groups[[.x]], both_groups$test_result_fct))
+      out <- tibble(
+        code = .x,
+        freq_mild = mean(both_groups[[.x]][both_groups$test_result_fct == "Mild Depression"], na.rm = T),
+        freq_mod = mean(both_groups[[.x]][both_groups$test_result_fct == "Moderate Depression"], na.rm = T),
+        freq_sev = mean(both_groups[[.x]][both_groups$test_result_fct == "Moderately Severe or Severe Depression"], na.rm = T),
+        x2 = chisq$statistic,
+        df = chisq$parameter,
+        p = chisq$p.value
+      )
+      return(out)
+    }
+  ) %>%
+  bind_rows() %>%
+  mutate(p_adj = p.adjust(p, "BH"))
+
+# Relationship with change in primary outcomes
+out <- tibble()
+
+for(code in feedback_impact_codes) {
+  
+  for(outcome in c("pc", "tc", "mc", "pp", "bl")) {
+    
+    formula = as.formula("prob_" %+% outcome %+% "_t2_z ~ prob_" %+% outcome %+% "_t1_z + " %+% code)
+    
+    reg_out <- regression(feedback_only, formula)
+    
+    coef <- reg_out %>%
+      filter(iv == code)
+    
+    out <- rbind(out, coef)
+    
+  }
+  
+}
+
+out %>%
+  mutate(p_adj = p.adjust(p, "BH")) %>%
+  arrange(p_adj)
+
+# Relationship with self-labeling
+out <- tibble()
+
+for(code in feedback_impact_codes) {
+  
+  formula = as.formula("self_label_t2_bin ~ self_label_t1 + " %+% code)
+  
+  reg_out <- glm(
+    data = feedback_only,
+    formula = formula,
+    family = "binomial"
+  )
+  
+  coef <- reg_out %>%
+    tidy(exponentiate = T) %>%
+    filter(term == code)
+  
+  out <- bind_rows(out, coef)
+  
+}
+
+out %>%
+  mutate(p_adj = p.adjust(p.value, "BH")) %>%
+  arrange(p_adj)
+```
+
+#### Heterogeneity in Primary Outcomes
+
+```{r}
+# Average change, either direction
+mean(abs(feedback_only$prob_pc_t2_z - feedback_only$prob_pc_t1_z))
+mean(abs(feedback_only$prob_tc_t2_z - feedback_only$prob_tc_t1_z))
+mean(abs(feedback_only$prob_mc_t2_z - feedback_only$prob_mc_t1_z))
+mean(abs(feedback_only$prob_pp_t2_z - feedback_only$prob_pp_t1_z))
+mean(abs(feedback_only$prob_bl_t2_z - feedback_only$prob_bl_t1_z))
+
+# No significant differences in absolute value of change
+t.test(abs(feedback_only$prob_pc_t2 - feedback_only$prob_pc_t1) ~ feedback_only$self_label_t2_bin)
+t.test(abs(feedback_only$prob_tc_t2 - feedback_only$prob_tc_t1) ~ feedback_only$self_label_t2_bin)
+t.test(abs(feedback_only$prob_mc_t2 - feedback_only$prob_mc_t1) ~ feedback_only$self_label_t2_bin)
+t.test(abs(feedback_only$prob_pp_t2 - feedback_only$prob_pp_t1) ~ feedback_only$self_label_t2_bin)
+t.test(abs(feedback_only$prob_bl_t2 - feedback_only$prob_bl_t1) ~ feedback_only$self_label_t2_bin)
+
+# Visualized:
+feedback_only %>%
+  mutate(
+    change_pc = (prob_pc_t2 - prob_pc_t1) / sd(prob_pc_t1),
+    change_tc = (prob_tc_t2 - prob_tc_t1) / sd(prob_tc_t1),
+    change_mc = (prob_mc_t2 - prob_mc_t1) / sd(prob_mc_t1),
+    change_pp = (prob_pp_t2 - prob_pp_t1) / sd(prob_pp_t1),
+    change_bl = (prob_bl_t2 - prob_bl_t1) / sd(prob_bl_t1)
+  ) %>%
+  pivot_longer(cols = starts_with("change_")) %>%
+  mutate(
+    name = factor(
+      name,
+      levels = c("change_pc", "change_tc", "change_mc", "change_pp", "change_bl"),
+      labels = c("Personal Control", "Treatment Control", "Medication Control", "Prognostic Pessimism", "Self-Blame")
+    )
+  ) %>%
+  select(self_label_t2, name, value) %>%
+  ggplot() +
+  geom_density(
+    aes(
+      x = value, 
+      group = self_label_t2, 
+      fill = self_label_t2
+    ),
+    bw = .25,
+    alpha = .25
+  ) +
+  scale_x_continuous(name = "Change (SD Units)") +
+  scale_y_continuous(name = "Density") +
+  scale_fill_discrete(name = "Self-Labeling (t2)") +
+  facet_wrap(~ name) +
+  theme_classic()
+```
+
+#### Predicting Help-Seeking
+
+```{r}
+feedback_only %>%
+  group_by(self_label_t2) %>%
+  summarize(opt_in_t2 = percent(mean(opt_in_t2 == "Yes"), .1))
+
+# By self-labeling
+oddsratio::or_glm(
+  feedback_only,
+  glm(
+    data = feedback_only,
+    formula = (opt_in_t2 == "Yes") ~ self_label_t2,
+    family = "binomial"
+  )
+)
+
+# By test results (and self-labeling)
+oddsratio::or_glm(
+  feedback_only,
+  glm(
+    data = feedback_only,
+    formula = (opt_in_t2 == "Yes") ~ test_result + self_label_t2,
+    family = "binomial"
+  )
+)
+
+# By group
+oddsratio::or_glm(
+  both_groups,
+  glm(
+    data = both_groups,
+    formula = (opt_in_t2 == "Yes") ~ group,
+    family = "binomial"
+  )
+)
+```
+
+#### Change in Self-Labeling
+
+```{r}
+feedback_only %>%
+  count(self_label_t2) %>%
+  mutate(pct = percent(n / sum(n), .1))
+
+# By baseline
+feedback_only %>%
+  group_by(self_label_t1) %>%
+  count(self_label_t2) %>%
+  mutate(pct = percent(n / sum(n), .1))
+
+oddsratio::or_glm(
+  feedback_only,
+  glm(
+    data = both_groups,
+    formula = self_label_t2_bin ~ self_label_t1,
+    family = "binomial",
+  )
+)
+
+# By test results
+feedback_only %>%
+  group_by(test_result_fct) %>%
+  count(self_label_t2) %>%
+  mutate(pct = percent(n / sum(n), .1))
+
+oddsratio::or_glm(
+  feedback_only,
+  glm(
+    data = both_groups,
+    formula = self_label_t2_bin ~ test_result_fct,
+    family = "binomial",
+  )
+)
+
+# By group
+oddsratio::or_glm(
+  both_groups,
+  glm(
+    data = both_groups,
+    formula = self_label_t2_bin ~ group_char,
+    family = "binomial",
+  )
+)
+
+# Alluvial diagram
+library(ggalluvial)
+feedback_only %>%
+  count(self_label_t1, self_label_t2) %>%
+  group_by(self_label_t1) %>%
+  mutate(
+    combination = paste0(self_label_t1, " -> ", self_label_t2),
+    label_left = "n = " %+% n,
+    label_right = percent(n / sum(n), .1)
+  ) %>%
+  pivot_longer(cols = c(self_label_t1, self_label_t2)) %>%
+  ggplot(
+    aes(
+      x = name,
+      y = n,
+      alluvium = combination, 
+      stratum = value
+    )
+  ) +
+  geom_alluvium(aes(fill = value), show.legend = F) +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  geom_text(
+    stat = "flow", 
+    aes(label = ifelse(name == "self_label_t1", label_left, "")),
+    position = position_nudge(x = .25)
+  ) +
+  geom_text(
+    stat = "flow", 
+    aes(label = ifelse(name == "self_label_t2", label_right, "")),
+    position = position_nudge(x = -.25)
+  ) +
+  scale_x_discrete(name = "Timepoint", labels = c("Before Feedback", "After Feedback")) +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```
+
+#### Blame and Control
+
+```{r}
+# Both groups: baseline
+cor.test(both_groups$prob_pc_t1, both_groups$prob_bl_t1)
+
+# Feedback only: baseline and follow-up
+cor.test(feedback_only$prob_pc_t1, feedback_only$prob_bl_t1)
+cor.test(feedback_only$prob_pc_t2, feedback_only$prob_bl_t2)
+
+# Intervention: baseline and follow-up
+cor.test(intervention_only$prob_pc_t1, intervention_only$prob_bl_t1)
+cor.test(intervention_only$prob_pc_t2, intervention_only$prob_bl_t2)
+
+library(ggpubr)
+both_groups %>%
+  ggplot(aes(prob_pc_t2, prob_bl_t2)) +
+  geom_jitter(aes(color = group_char), alpha = .5) +
+  geom_smooth(aes(color = group_char), formula = y ~ x, method = lm, se = F) +
+  stat_cor(method = "pearson") +
+  scale_x_continuous(name = "Perceived Personal Control (t2)") +
+  scale_y_continuous(name = "Self-Blame (t2)") +
+  scale_color_discrete(name = "Group") +
+  facet_wrap(~ group_char) +
+  theme_classic()
+```
+
+#### Qualitative responses
+
+```{r} 
+# No self-labeling; why?
+both_groups %>%
+  distinct(group, test_result, self_label_t2, why_not_no_t2) %>%
+  arrange(group, test_result, self_label_t2, why_not_no_t2) %>%
+  drop_na() %>%
+  kable() %>%
+  kable_styling()
+
+# Unsure about self-labeling; why?
+both_groups %>%
+  distinct(group, test_result, self_label_t2, why_not_unsure_t2) %>%
+  arrange(group, test_result, self_label_t2, why_not_unsure_t2) %>%
+  drop_na() %>%
+  kable() %>%
+  kable_styling()
+
+# Advice to other users (and permission to share)
+both_groups %>%
+  distinct(group, test_result, review_permission, review_advice) %>%
+  arrange(group, test_result, review_permission, review_advice) %>%
+  drop_na() %>%
+  kable() %>%
+  kable_styling()
+
+# Talk back to a friend
+both_groups %>%
+  distinct(group, test_result, review_talk_back) %>%
+  arrange(group, test_result, review_talk_back) %>%
+  drop_na() %>%
+  kable() %>%
+  kable_styling()
+
+# Plan (behavior)
+both_groups %>%
+  distinct(group, test_result, plan_behavior) %>%
+  arrange(group, test_result, plan_behavior) %>%
+  drop_na() %>%
+  kable() %>%
+  kable_styling()
+
+# Plan (thoughts)
+both_groups %>%
+  distinct(group, test_result, plan_thoughts) %>%
+  arrange(group, test_result, plan_thoughts) %>%
+  drop_na() %>%
+  kable() %>%
+  kable_styling()
+```
