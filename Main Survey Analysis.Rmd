@@ -427,8 +427,9 @@ both_groups %>%
       grepl("_tc_", name) ~ "Therapy Control",
       grepl("_mc_", name) ~ "Medication Control",
       grepl("_pp_", name) ~ "Prognostic Pessimism",
-      grepl("_bl_", name) ~ "Blame"
-    )
+      grepl("_bl_", name) ~ "(Self-)Blame"
+    ) %>%
+      factor(levels = c("Personal Control", "Therapy Control", "Medication Control", "Prognostic Pessimism", "(Self-)Blame"))
   ) %>%
   ggplot() +
   geom_histogram(
@@ -677,8 +678,9 @@ both_groups %>%
   scale_x_discrete(name = "Timepoint") +
   scale_y_continuous(name = "Mean (Likert Scale Points)") +
   labs(color = "Received Intervention", linetype = "Self-Label (t2)") +
-  facet_wrap(group_char ~ construct, nrow = 2) +
-  theme_classic()
+  facet_grid(group_char ~ construct) +
+  theme_classic() +
+  theme(panel.grid.major.y = element_line())
 ```
 
 #### RQ 2b. Moderation by Depression Beliefs
